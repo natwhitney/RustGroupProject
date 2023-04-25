@@ -4,8 +4,4 @@ struct Node<T> {
     right: Option<Box<Node<T>>>,
 }
 
-impl<T> Node<T>{
-    
-}
-
 
