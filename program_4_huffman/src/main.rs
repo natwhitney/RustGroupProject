@@ -13,22 +13,27 @@ fn main() {
         .expect("Couldn't Read File");
 
     let char_vals = count_chars(file_contents);
-    let mut node_vec = create_nodes(char_vals);
+    let node_vec = create_nodes(char_vals);
 
-    node_vec.sort();
-
-    println!("{:?}", node_vec);
+    let final_node = build_huffman(node_vec);
+    println!("{:?}", final_node);
 }
 
 //Builds a huffman binary tree based off of the node list we made
-fn build_huffman(node_vec: Vec<Node<CharCounts>>) -> Node<CharCounts> {
+fn build_huffman(mut node_vec: Vec<Node<CharCounts>>) -> Node<CharCounts> {
     while node_vec.len() > 1 {
         node_vec.sort_by(|a, b| b.cmp(a));
-        let right = node_vec.pop();
-        let left = node_vec.pop();
+
+        let right = node_vec.pop().unwrap();
+        let left = node_vec.pop().unwrap();
+        let sum = right.get_info().0.0 + left.get_info().0.0;
+
+        let new_node = binary_tree::Node::new_node(CharCounts(sum, None), Some(Box::new(left)), Some(Box::new(right)));
+
+        node_vec.push(new_node);
     }
 
-    let final_node = node_vec.pop();
+    node_vec.pop().unwrap()
 }
 
 //Returns a Hashmap of each character being a key, and its value being how many times it appeared
