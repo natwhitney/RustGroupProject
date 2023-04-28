@@ -15,47 +15,47 @@ fn main() {
     }
 
     let mut cart: Vec<Item> = Vec::new();
-    let mut input = 0;
-    let mut nameIn;
-    let mut colorIn;
-    let mut sizeIn;
+    let mut input_string = String::new();
+    let input_int = 0;
+    let mut name_in = String::from("");
+    let mut color_in = String::from("");
+    let mut size_in = String::from("");
+    /////////////////////////////////////////////////////////////////////////
 
-  //  let mut test: Item = Item{
-  //      name: String::from("test"),
-  //      color: String::from("test"),
-  //      size: String::from("test")
-  //  };
     
-    println!("Welcome to the Mock Store!");
+    println!("Welcome to Window Shopping Simulator!");
 
-    while input != 3 
+    while input_int != 3
     {
         println!("Select an option:");
         println!("1: Add item to cart.");
         println!("2: View cart.");
         println!("3: Quit");
-        std::io::stdin().read_line( &mut input).expect("Didn't receive input.");
-
-        if input == 1 
+        std::io::stdin().read_line( &mut input_string).expect("Didn't receive input.");
+        let input_int: i32 = input_string.trim().parse().expect("invalid input");
+        /////////////////////////////////////////////////////////////////////////
+        if input_int == 1 
         {
             println!("What is the name of your item?");
-            std::io::stdin().read_line( &mut nameIn).expect("Didn't receive input.");
+            std::io::stdin().read_line( &mut name_in).expect("Didn't receive input.");
             println!("What is the color of your item?");
-            std::io::stdin().read_line( &mut colorIn).expect("Didn't receive input.");
+            std::io::stdin().read_line( &mut color_in).expect("Didn't receive input.");
             println!("What is the size of your item?");
-            std::io::stdin().read_line( &mut sizeIn).expect("Didn't receive input.");
+            std::io::stdin().read_line( &mut size_in).expect("Didn't receive input.");
 
             
-            let tempItem: Item = Item{
+            let temp_item: Item = Item{
                 name: String::from("test"),
                 color: String::from("test"),
                 size: String::from("test")
             };
-            cart.push(tempItem);
+            cart.push(temp_item);
         }
-        else if input == 2
+        /////////////////////////////////////////////////////////////////////////
+        else if input_int == 2
         {
-            for item in cart
+            println!("Cart:");
+            for item in &cart
             {
                 println!("Item {:?} in cart:", item);
                 println!("Item : {}", item.name);
