@@ -15,8 +15,8 @@ fn main() {
     }
 
     let mut cart: Vec<Item> = Vec::new();
-    let mut input_string = String::new();
-    let input_int = 0;
+    let mut input_string;
+    let mut input_int = 0;
     let mut name_in = String::from("");
     let mut color_in = String::from("");
     let mut size_in = String::from("");
@@ -26,13 +26,14 @@ fn main() {
     println!("Welcome to Window Shopping Simulator!");
 
     while input_int != 3
-    {
+    {   
         println!("Select an option:");
         println!("1: Add item to cart.");
         println!("2: View cart.");
         println!("3: Quit");
+        input_string = ("").to_string();
         std::io::stdin().read_line( &mut input_string).expect("Didn't receive input.");
-        let input_int: i32 = input_string.trim().parse().expect("invalid input");
+        input_int = input_string.trim().parse().expect("invalid input");
         /////////////////////////////////////////////////////////////////////////
         if input_int == 1 
         {
