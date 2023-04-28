@@ -32,16 +32,16 @@ fn main() {
         println!("1: Add item to cart.");
         println!("2: View cart.");
         println!("3: Quit");
-        io:stdin().read_line( &mut input).expect("Didn't receive input.");
+        std::io::stdin().read_line( &mut input).expect("Didn't receive input.");
 
         if(input == 1)
         {
             println!("What is the name of your item?");
-            io:stdin().read_line( &mut name).expect("Didn't receive input.");
+            std::io::stdin().read_line( &mut name).expect("Didn't receive input.");
             println!("What is the color of your item?");
-            io:stdin().read_line( &mut color).expect("Didn't receive input.");
+            std::io::stdin().read_line( &mut color).expect("Didn't receive input.");
             println!("What is the size of your item?");
-            io:stdin().read_line( &mut size).expect("Didn't receive input.");
+            std::io::stdin().read_line( &mut size).expect("Didn't receive input.");
 
             
             let tempItem: Item = Item{
@@ -55,10 +55,10 @@ fn main() {
         {
             for i in &mut cart
             {
-                println!("Item {} in cart:", x);
-                println!("Item : {}", cart[x].name);
-                println!("Color : {}", cart[x].color);
-                println!("Size : {}", cart[x].size);
+                println!("Item {} in cart:", i);
+                println!("Item : {}", cart[i].name);
+                println!("Color : {}", cart[i].color);
+                println!("Size : {}", cart[i].size);
             }
         }
     }
