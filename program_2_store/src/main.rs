@@ -17,13 +17,14 @@ fn main() {
     let mut cart: Vec<Item> = Vec::new();
     let mut input_string;
     let mut input_int = 0;
-    let mut name_in = String::from("");
-    let mut color_in = String::from("");
-    let mut size_in = String::from("");
+    //let mut name_in = String::new();
+    //let mut color_in = String::new();
+    //let mut size_in = String::new();
     /////////////////////////////////////////////////////////////////////////
 
-    
+    println!("");
     println!("Welcome to Window Shopping Simulator!");
+    println!("-----------------------------------------------");
 
     while input_int != 3
     {   
@@ -34,10 +35,15 @@ fn main() {
         input_string = ("").to_string();
         std::io::stdin().read_line( &mut input_string).expect("Didn't receive input.");
         input_int = input_string.trim().parse().expect("invalid input");
+        println!("");
+
         /////////////////////////////////////////////////////////////////////////
         if input_int == 1 
         {
-            println!("What is the name of your item?");
+            let mut name_in = ("").to_string();
+            let mut color_in = ("").to_string();
+            let mut size_in = ("").to_string();
+            println!("What item did you want to add to cart? (EX: Car, House, Bike, etc)");
             std::io::stdin().read_line( &mut name_in).expect("Didn't receive input.");
             println!("What is the color of your item?");
             std::io::stdin().read_line( &mut color_in).expect("Didn't receive input.");
@@ -46,9 +52,9 @@ fn main() {
 
             
             let temp_item: Item = Item{
-                name: String::from("test"),
-                color: String::from("test"),
-                size: String::from("test")
+                name: name_in.to_string(),
+                color: color_in.to_string(),
+                size: size_in.to_string()
             };
             cart.push(temp_item);
         }
@@ -56,14 +62,22 @@ fn main() {
         else if input_int == 2
         {
             println!("Cart:");
+            println!("--------------------");
             for item in &cart
             {
-                println!("Item {:?} in cart:", item);
+                //println!("Item {?:} in cart:", item);
                 println!("Item : {}", item.name);
                 println!("Color : {}", item.color);
                 println!("Size : {}", item.size);
+                println!("--------------------");
             }
         }
+        else if input_int != 3
+        {
+            println!("Invalid Input");
+        }
+        println!("-----------------------------------------------");
+
     }
 
      println!("Ending program. Goodbye!");
