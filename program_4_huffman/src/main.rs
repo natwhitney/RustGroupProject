@@ -12,28 +12,50 @@ fn main() {
     let file_contents = fs::read_to_string(&input_arg[1])
         .expect("Couldn't Read File");
 
-    let char_vals = count_chars(file_contents);
+
+    let char_vals = count_chars(&file_contents);
     let mut node_vec = create_nodes(&char_vals);
 
     let final_node = build_huffman_tree(&mut node_vec);
 
     let mut char_hash = HashMap::new();
-    gen_binary_reps(final_node, &mut char_hash, ("").to_string());
+    gen_binary_reps(final_node, &mut char_hash, "");
 
+    let binary_string = replace_chars(&file_contents, &char_hash);
+
+    println!("{}", file_contents);
+    println!("{:?}", char_vals);
     println!("{:?}", char_hash);
+    println!("{}", binary_string);
 }
 
-fn gen_binary_reps(node: Node<CharCounts>, char_hash: &mut HashMap<char, String>, binary_string: String) {
+
+//generates a new binary representation for each character, using the huffman tree
+fn gen_binary_reps(node: Node<CharCounts>, char_hash: &mut HashMap<char, String>, binary_string: &str) {
     let cur_char = node.get_info().0.1;
     let new_nodes = node.get_children();
 
     if cur_char != None {
-        char_hash.insert(cur_char.unwrap(), binary_string);
-    } else if new_nodes.0 != None {
-        gen_binary_reps(*new_nodes.0.unwrap(), char_hash, binary_string + "0");
-    } else if new_nodes.1 != None {
-        gen_binary_reps(*new_nodes.1.unwrap(), char_hash, binary_string + "1");
+        char_hash.insert(cur_char.unwrap(), binary_string.to_string());
+    } else {
+        if new_nodes.0 != None {
+            gen_binary_reps(*new_nodes.0.unwrap(), char_hash, (binary_string.to_owned() + "0").as_str());
+        }   
+        if new_nodes.1 != None {
+            gen_binary_reps(*new_nodes.1.unwrap(), char_hash, (binary_string.to_owned() + "1").as_str());
+        }
     }
+}
+
+//replaces characters with a binary string
+fn replace_chars(input_string: &String, char_hash: &HashMap<char, String>) -> String {
+    let mut final_string = String::new();
+
+    for char in input_string.chars() {
+        final_string += char_hash.get(&char).unwrap();
+    }
+    
+    final_string
 }
 
 //Builds a huffman binary tree based off of the node list we made
@@ -54,7 +76,7 @@ fn build_huffman_tree(node_vec: &mut Vec<Node<CharCounts>>) -> Node<CharCounts> 
 }
 
 //Returns a Hashmap of each character being a key, and its value being how many times it appeared
-fn count_chars(input: String) -> HashMap<char, i32>{
+fn count_chars(input: &String) -> HashMap<char, i32>{
     let mut char_hash = HashMap::new();
 
     for character in input.chars(){
