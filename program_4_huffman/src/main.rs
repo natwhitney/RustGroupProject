@@ -19,7 +19,7 @@ fn main() {
     let final_node = build_huffman_tree(&mut node_vec);
 
     let mut char_hash = HashMap::new();
-    gen_binary_reps(final_node, &mut char_hash, "");
+    gen_binary_reps(&final_node, &mut char_hash, "");
 
     let binary_string = replace_chars(&file_contents, &char_hash);
 
@@ -31,18 +31,18 @@ fn main() {
 
 
 //generates a new binary representation for each character, using the huffman tree
-fn gen_binary_reps(node: Node<CharCounts>, char_hash: &mut HashMap<char, String>, binary_string: &str) {
+fn gen_binary_reps(node: &Node<CharCounts>, char_hash: &mut HashMap<char, String>, binary_string: &str) {
     let cur_char = node.get_info().0.1;
     let new_nodes = node.get_children();
 
     if cur_char != None {
         char_hash.insert(cur_char.unwrap(), binary_string.to_string());
     } else {
-        if new_nodes.0 != None {
-            gen_binary_reps(*new_nodes.0.unwrap(), char_hash, (binary_string.to_owned() + "0").as_str());
+        if new_nodes.0 != &None {
+            gen_binary_reps(&new_nodes.0.as_ref().unwrap(), char_hash, (binary_string.to_owned() + "0").as_str());
         }   
-        if new_nodes.1 != None {
-            gen_binary_reps(*new_nodes.1.unwrap(), char_hash, (binary_string.to_owned() + "1").as_str());
+        if new_nodes.1 != &None {
+            gen_binary_reps(&new_nodes.1.as_ref().unwrap(), char_hash, (binary_string.to_owned() + "1").as_str());
         }
     }
 }
@@ -74,6 +74,28 @@ fn build_huffman_tree(node_vec: &mut Vec<Node<CharCounts>>) -> Node<CharCounts> 
 
     node_vec.pop().unwrap()
 }
+
+//stores the tree in a string, followed by 16 bits of 0,
+//to make sure we know where the tree ends, and the actual data starts.
+
+//If the node is a leaf, store a 1 and then its character represented by 8 bits
+//Else put a 0 down and then recursively call for the left and right children.
+/*fn store_tree(node: &Node<CharCounts>, output_string: &str) {
+
+    let owner_string = output_string.to_string();
+
+    if node.is_leaf() {
+        owner_string += "1";
+        output_string.push(node.get_info().0.1.unwrap());
+    } else {
+        let left_child = (node.get_children().0.as_ref()).unwrap();
+        let right_child = node.get_children().1.as_ref().unwrap();
+        output_string += "0";
+        store_tree(&left_child, &output_string);
+        store_tree(right_child, output_string);
+    }
+}*/
+
 
 //Returns a Hashmap of each character being a key, and its value being how many times it appeared
 fn count_chars(input: &String) -> HashMap<char, i32>{

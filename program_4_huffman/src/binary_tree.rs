@@ -11,9 +11,9 @@ impl<T> Node<T> where T: Ord{
         (&self.data, &self.left, &self.right)
     }
 
-    pub fn get_children(self) -> (Option<Box<Node<T>>>, Option<Box<Node<T>>>) {
-        let left_node = self.left;
-        let right_node = self.right;
+    pub fn get_children(&self) -> (&Option<Box<Node<T>>>, &Option<Box<Node<T>>>) {
+        let left_node = &self.left;
+        let right_node = &self.right;
 
         (left_node, right_node)
     }
@@ -25,5 +25,12 @@ impl<T> Node<T> where T: Ord{
             right,
         };
         new_node
+    }
+
+    pub fn is_leaf(&self) -> bool {
+        if &self.left == &None && &self.right == &None {
+            return true
+        }
+        false
     }
 }
