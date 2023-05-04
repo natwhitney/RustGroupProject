@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use std::fs;
 use std::env;
 use binary_tree::Node;
+use bitvec::prelude::*;
+use std::io::Write;
 
 mod binary_tree;
 
@@ -12,8 +14,11 @@ fn main() {
     let file_contents = fs::read_to_string(&input_arg[1])
         .expect("Couldn't Read File");
 
+    build_and_write(&file_contents, &input_arg[2]);
+}
 
-    let char_vals = count_chars(&file_contents);
+fn build_and_write(input_string: &String, new_file_name: &String) {
+    let char_vals = count_chars(&input_string);
     let mut node_vec = create_nodes(&char_vals);
 
     let final_node = build_huffman_tree(&mut node_vec);
@@ -21,12 +26,69 @@ fn main() {
     let mut char_hash = HashMap::new();
     gen_binary_reps(&final_node, &mut char_hash, "");
 
-    let binary_string = replace_chars(&file_contents, &char_hash);
+    let binary_string = replace_chars(&input_string, &char_hash);
 
-    println!("{}", file_contents);
+    let mut tree_string = String::new();
+    store_tree(&final_node, &mut tree_string);
+
+    let full_tree_string = convert_tree_to_full_binary(&tree_string);
+
+    println!("{}", input_string);
     println!("{:?}", char_vals);
     println!("{:?}", char_hash);
-    println!("{}", binary_string);
+    println!("{}\n", binary_string);
+    println!("{}\n", tree_string);
+    println!("{}\n", full_tree_string);
+
+    let full_string = binary_string + "0000000000000000" + &full_tree_string;
+
+    println!("{}", full_string);
+
+    let mut full_bit_vec = bitvec!();
+    for char in full_string.chars() {
+        match char {
+            '0' => full_bit_vec.push(false),
+            '1' => full_bit_vec.push(true),
+            _ => panic!("Unexpected value in binary string!"),
+        }
+    }
+
+    println!("{:?}", full_bit_vec);
+    /*
+    let mut new_file = fs::File::create(new_file_name)
+        .expect("Couldn't Create File");
+
+    let mut pos = 0;
+
+    while pos < full_bit_vec.len() {
+        let bytes_written = new_file.write(&full_bit_vec[pos]);
+    }
+    */
+
+
+}
+
+fn convert_tree_to_full_binary(binary_string: &String) -> String {
+    let mut bit_string = String::new();
+    let mut leaf_flag = false;
+    for char in binary_string.clone().into_bytes() {
+        if leaf_flag == true {
+            let cur_char = &format!("{:0>8b}", char);
+            bit_string += cur_char;
+            leaf_flag = false;
+        }
+        //48 is the ascii for 0 
+        else if char == 48 {
+            bit_string.push('0');
+        }
+        //49 is the ascii for 1 
+        else if char == 49 {
+            bit_string.push('1');
+            leaf_flag = true;
+        }
+    }
+
+    bit_string
 }
 
 
@@ -80,21 +142,18 @@ fn build_huffman_tree(node_vec: &mut Vec<Node<CharCounts>>) -> Node<CharCounts> 
 
 //If the node is a leaf, store a 1 and then its character represented by 8 bits
 //Else put a 0 down and then recursively call for the left and right children.
-/*fn store_tree(node: &Node<CharCounts>, output_string: &str) {
-
-    let owner_string = output_string.to_string();
-
+fn store_tree(node: &Node<CharCounts>, output_string: &mut String) {
     if node.is_leaf() {
-        owner_string += "1";
+        output_string.push('1');
         output_string.push(node.get_info().0.1.unwrap());
     } else {
-        let left_child = (node.get_children().0.as_ref()).unwrap();
+        let left_child = node.get_children().0.as_ref().unwrap();
         let right_child = node.get_children().1.as_ref().unwrap();
-        output_string += "0";
-        store_tree(&left_child, &output_string);
+        output_string.push('0');
+        store_tree(&left_child, output_string);
         store_tree(right_child, output_string);
     }
-}*/
+}
 
 
 //Returns a Hashmap of each character being a key, and its value being how many times it appeared
