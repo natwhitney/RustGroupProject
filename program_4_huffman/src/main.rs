@@ -44,6 +44,13 @@ fn build_and_write(input_string: &String, new_file_name: &String) {
 
     println!("{}", full_string);
 
+    let mut new_file = fs::File::create(new_file_name)
+        .expect("Couldn't Create File");
+
+    write!(new_file, "{}", full_string)
+        .expect("Couldn't Write to File");
+
+    /* 
     let mut full_bit_vec = bitvec!();
     for char in full_string.chars() {
         match char {
@@ -54,12 +61,12 @@ fn build_and_write(input_string: &String, new_file_name: &String) {
     }
 
     println!("{:?}", full_bit_vec);
-    /*
+    
     let mut new_file = fs::File::create(new_file_name)
         .expect("Couldn't Create File");
 
     let mut pos = 0;
-
+    
     while pos < full_bit_vec.len() {
         let bytes_written = new_file.write(&full_bit_vec[pos]);
     }
