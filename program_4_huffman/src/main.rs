@@ -3,43 +3,132 @@ use std::collections::HashMap;
 use std::fs;
 use std::env;
 use binary_tree::Node;
-use bitvec::prelude::*;
-use std::io::Write;
+use std::fs::File;
+use std::io::prelude::*;
 
 mod binary_tree;
 
 fn main() {
     let input_arg: Vec<String> = env::args().collect();
 
-    let file_contents = fs::read_to_string(&input_arg[1])
-        .expect("Couldn't Read File");
+    if input_arg[1] == "-w".to_string() {
+        let input_text_file = &input_arg[2];
+        let output_binary_file = &input_arg[3];
 
-    build_and_write(&file_contents, &input_arg[2]);
-    let new_string = read_byte_to_string(&"new_file.bin".to_string());
+        let file_contents = fs::read_to_string(input_text_file)
+            .expect("Couldn't Read File");
 
-    println!("{}", new_string);
+        println!("{}", file_contents);
+        build_and_write(&file_contents, output_binary_file)
+    } else if input_arg[1] == "-r".to_string() {
+        let input_binary_file = &input_arg[2];
+        let output_text_file = &input_arg[3];
+        read_message(input_binary_file, output_text_file);
+    }
 }
 
-/*
-fn read_message(input_file: &String, output_file: &String) {
 
+fn read_message(input_file: &str, output_file: &str) {
+    let file_contents = read_byte_to_string(&input_file.to_string());
+
+    let tree_len = &file_contents[..16];
+    let tree_len = usize::from_str_radix(tree_len, 2).unwrap();
+    
+    let tree_string = &file_contents[16..(16 + tree_len)];
+    let binary_string = &file_contents[(16 + tree_len)..];
+
+    let node = read_tree(&mut tree_string.to_string());
+
+    let mut new_char_hash = HashMap::new();
+    gen_binary_reps_read(&node, &mut new_char_hash, "");
+
+    let final_string: String = replace_binary(&mut binary_string.to_string(), &new_char_hash);
+
+    let mut out_file = File::create(output_file)
+        .expect("Couldn't Create File");
+    write!(out_file, "{}", final_string)
+        .expect("Couldn't Write to File");
+
+    println!("{}", final_string);
 }
 
 fn read_tree(input_string: &mut String) -> Node<Option<char>> {
-    let mut node: Node<Option<char>> = binary_tree::Node::new_node(None, None, None);
+    let input_slice = input_string.as_str();
 
-    for bit in input_string.chars(){
-        if bit == '0' {
-            node.set_left(binary_tree::Node::new_node(None, None, None));
-            node.set_right(binary_tree::Node::new_node(None, None, None));
-        } else if bit == '1' {
-
+    let mut i = 0;
+    let mut tree_string = String::new();
+    while i < input_slice.len() {
+        let char_byte: u8 = input_slice.as_bytes()[i];
+        let char_byte = char_byte as char;
+        if char_byte == '1' {
+            tree_string.push('1');
+            tree_string.push(binary_to_char(&input_slice[i + 1..(i + 9)]));
+            i = i + 9;
+        } else {
+            tree_string.push('0');
+            i += 1;
         }
     }
-    node
-}
-*/
 
+    let mut reverse_string: String = tree_string.chars().rev().collect();
+
+    fn build_tree(input_string: &mut String) -> Node<Option<char>> {
+        if input_string.pop() == Some('1') {
+            return binary_tree::Node::new_node(input_string.pop(), None, None);
+        } else {
+            let left = build_tree(input_string);
+            let right = build_tree(input_string);
+            return binary_tree::Node::new_node(None, Some(Box::new(left)), Some(Box::new(right)));
+        }
+    }
+
+    build_tree(&mut reverse_string)
+
+}
+
+fn replace_binary(binary_string: &mut String, char_hash: &HashMap<String, char>) -> String {
+    let mut final_string = String::new();
+
+    let mut base = 0;
+    let mut i = 0;
+
+    while i <= binary_string.len(){
+        if char_hash.contains_key(&binary_string[base..i]) {
+            final_string.push(*char_hash.get(&binary_string[base..i]).unwrap());
+            base = i;
+        }
+        i += 1;
+    }
+
+    final_string
+}
+
+fn gen_binary_reps_read(node: &Node<Option<char>>, char_hash: &mut HashMap<String, char>, binary_string: &str) {
+    let cur_char = *node.get_info().0;
+    let new_nodes = node.get_children();
+
+    if cur_char != None {
+        char_hash.insert(binary_string.to_string(), cur_char.unwrap());
+    } else {
+        if new_nodes.0 != &None {
+            gen_binary_reps_read(&new_nodes.0.as_ref().unwrap(), char_hash, (binary_string.to_owned() + "0").as_str());
+        }   
+        if new_nodes.1 != &None {
+            gen_binary_reps_read(&new_nodes.1.as_ref().unwrap(), char_hash, (binary_string.to_owned() + "1").as_str());
+        }
+    }
+}
+
+fn binary_to_char(binary_str: &str) -> char {
+    let mut value = 0;
+
+    for (i, ch) in binary_str.chars().enumerate() {
+        let bit = ch.to_digit(2).expect("Invalid binary string");
+        value += bit * 2_u32.pow(7 - i as u32);
+    }
+
+    value as u8 as char
+}
 
 fn build_and_write(input_string: &String, new_file_name: &String) {
     let char_vals = count_chars(&input_string);
@@ -57,59 +146,53 @@ fn build_and_write(input_string: &String, new_file_name: &String) {
 
     let full_tree_string = convert_tree_to_full_binary(&tree_string);
 
-    println!("{}", input_string);
-    println!("{:?}", char_vals);
-    println!("{:?}", char_hash);
-    println!("{}\n", binary_string);
-    println!("{}\n", tree_string);
-    println!("{}\n", full_tree_string);
+    let beginning_16_bits = get_tree_length_as_16_bits(&full_tree_string);
 
-    let mut full_string = full_tree_string + &binary_string;
+    let mut full_string = beginning_16_bits + &full_tree_string + &binary_string;
 
-    let padding = full_string.len() % 8;
+    let padding = 8 - (full_string.len() % 8);
+
+    println!("{}, and the padding is {}", full_string.len(), padding);
 
     //To generate padding so it writes in 8 byte chunks nicely
     for _ in 0..padding {
-        full_string += "0";
+        full_string.push('0');
     }
 
-    println!("{}", full_string);
+    println!("{}", full_string.len());
+
+    //println!("{}", full_string);
+
+    let mut new_file = File::create("new_file.txt")
+        .expect("Couldn't Create File");
+    write!(new_file, "{}", full_string)
+        .expect("Couldn't Write to file");
+    
+    println!("{:?}", final_node);
 
     write_string_as_bytes(&full_string, new_file_name)
 }
 
+fn get_tree_length_as_16_bits(tree_string: &String) -> String {
+    let tree_length = tree_string.len();
+    format!("{:0>16b}", tree_length)
+}
+
 fn read_byte_to_string(file_name: &String) -> String {
-    let byte_vec = &fs::read(file_name).expect("Couldn't Read File");
+    let byte_vec = &fs::read(file_name)
+        .expect("Couldn't Read File");
 
     let mut final_string = String::new();
 
-    println!();
+    //println!();
     for byte in byte_vec {
-        println!("{}", byte);
+        //println!("{}", byte);
         let temp_string = &format!("{:0>8b}", byte);
-        let reversed_byte = temp_string.chars().rev().collect::<String>();
+        let reversed_byte = temp_string.chars().collect::<String>();
         final_string += &reversed_byte;
     }
 
     final_string
-}
-
-/*
-fn read_byte_to_string(file_name: &String) -> String {
-    let byte_vec = &fs::read(file_name).expect("Couldn't Read File");
-
-    let mut final_string = String::new();
-
-    for byte in byte_vec {
-        let temp_string = &format!("{:0>8b}", byte);
-        final_string += &reverse(temp_string);
-    }
-
-    final_string
-}*/
-
-fn reverse(string: &str) -> String{
-    string.chars().rev().collect()
 }
 
 fn write_string_as_bytes(binary_string: &String, file_name: &String) {
@@ -137,7 +220,7 @@ fn write_string_as_bytes(binary_string: &String, file_name: &String) {
                 }
             }
             
-            println!("{}", num);
+            //println!("{}", num);
             byte_vec.push(num);
             counter = 0;
             bucket = [0; 8];
