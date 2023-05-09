@@ -1,3 +1,18 @@
+/*
+A program to do Huffman Coding
+
+3/31/23
+
+Nathan Whitney
+ */
+
+/*
+DISCLAIMER: 
+This code does a lot of weird things in order to work with binary.
+For instance, in order to use everything, a String of Binary digits is created,
+rather than dealing with the binary directly. This is because I tacked on the
+ability to write directly to binary files, rather than actually use a BitVec.
+ */
 use std::vec::Vec;
 use std::collections::HashMap;
 use std::fs;
@@ -27,7 +42,7 @@ fn main() {
     }
 }
 
-
+//Function to read the message from a file, and output it back to a text file
 fn read_message(input_file: &str, output_file: &str) {
     let file_contents = read_byte_to_string(&input_file.to_string());
 
@@ -52,6 +67,7 @@ fn read_message(input_file: &str, output_file: &str) {
     println!("{}", final_string);
 }
 
+//Function to read the tree from binary
 fn read_tree(input_string: &mut String) -> Node<Option<char>> {
     let input_slice = input_string.as_str();
 
@@ -86,6 +102,7 @@ fn read_tree(input_string: &mut String) -> Node<Option<char>> {
 
 }
 
+//Function to replace binary values with the characters
 fn replace_binary(binary_string: &mut String, char_hash: &HashMap<String, char>) -> String {
     let mut final_string = String::new();
 
@@ -103,6 +120,7 @@ fn replace_binary(binary_string: &mut String, char_hash: &HashMap<String, char>)
     final_string
 }
 
+//Function to generate binary representations for reading the tree
 fn gen_binary_reps_read(node: &Node<Option<char>>, char_hash: &mut HashMap<String, char>, binary_string: &str) {
     let cur_char = *node.get_info().0;
     let new_nodes = node.get_children();
@@ -119,6 +137,7 @@ fn gen_binary_reps_read(node: &Node<Option<char>>, char_hash: &mut HashMap<Strin
     }
 }
 
+//Simple function to translate binary strings to chars
 fn binary_to_char(binary_str: &str) -> char {
     let mut value = 0;
 
@@ -130,6 +149,7 @@ fn binary_to_char(binary_str: &str) -> char {
     value as u8 as char
 }
 
+//Function to build and write a tree from an input file to an output file
 fn build_and_write(input_string: &String, new_file_name: &String) {
     let char_vals = count_chars(&input_string);
     let mut node_vec = create_nodes(&char_vals);
@@ -152,42 +172,30 @@ fn build_and_write(input_string: &String, new_file_name: &String) {
 
     let padding = 8 - (full_string.len() % 8);
 
-    println!("{}, and the padding is {}", full_string.len(), padding);
-
     //To generate padding so it writes in 8 byte chunks nicely
     for _ in 0..padding {
         full_string.push('0');
     }
 
-    println!("{}", full_string.len());
-
-    //println!("{}", full_string);
-
-    let mut new_file = File::create("new_file.txt")
-        .expect("Couldn't Create File");
-    write!(new_file, "{}", full_string)
-        .expect("Couldn't Write to file");
-    
-    println!("{:?}", final_node);
-
     write_string_as_bytes(&full_string, new_file_name)
 }
 
+//Returns the lengths of the binary tree, as a binary string
 fn get_tree_length_as_16_bits(tree_string: &String) -> String {
     let tree_length = tree_string.len();
     format!("{:0>16b}", tree_length)
 }
 
+//Function to read a binary file to a string
 fn read_byte_to_string(file_name: &String) -> String {
     let byte_vec = &fs::read(file_name)
         .expect("Couldn't Read File");
 
     let mut final_string = String::new();
 
-    //println!();
     for byte in byte_vec {
-        //println!("{}", byte);
         let temp_string = &format!("{:0>8b}", byte);
+        //TODO: Fix this, as it is no longer reversed
         let reversed_byte = temp_string.chars().collect::<String>();
         final_string += &reversed_byte;
     }
@@ -195,6 +203,7 @@ fn read_byte_to_string(file_name: &String) -> String {
     final_string
 }
 
+//Function to write a binary string as bytes to a binary file
 fn write_string_as_bytes(binary_string: &String, file_name: &String) {
     if binary_string.len() % 8 != 0 {
         panic!("Binary String not divisible by bytes");
@@ -233,6 +242,8 @@ fn write_string_as_bytes(binary_string: &String, file_name: &String) {
         .expect("File Couldn't be created");
 }
 
+
+//Function to convert the tree to a binary string
 fn convert_tree_to_full_binary(binary_string: &String) -> String {
     let mut bit_string = String::new();
     let mut leaf_flag = false;
