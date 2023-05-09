@@ -35,7 +35,7 @@ fn print_board(spaces_list: &mut Vec<i32>, spaces_by_player: &mut Vec<char>) {
     }
 }
 
-//checks to see if user input matches the number 1-9
+//checks to see if a space is already in use
 fn check_input(input: usize, spaces_list: &mut Vec<bool>) -> bool {
     if spaces_list[input - 1] {
         println!("This space is already in use\n");
