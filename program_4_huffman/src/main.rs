@@ -64,7 +64,7 @@ fn build_and_write(input_string: &String, new_file_name: &String) {
     println!("{}\n", tree_string);
     println!("{}\n", full_tree_string);
 
-    let mut full_string = binary_string + &full_tree_string;
+    let mut full_string = full_tree_string + &binary_string;
 
     let padding = full_string.len() % 8;
 
