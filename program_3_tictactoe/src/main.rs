@@ -45,11 +45,7 @@ fn check_input(input: usize, spaces_list: &mut Vec<bool>) -> bool {
 }
 
 //checks to see if a player has won the game
-fn check_for_winner(
-    spaces_taken: &mut Vec<bool>,
-    spaces_by_player: &mut Vec<char>,
-    current_player: char,
-) -> bool {
+fn check_for_winner(spaces_taken: &mut Vec<bool>, spaces_by_player: &mut Vec<char>, current_player: char,) -> bool {
     for i in 0..3 {
         //3 in a row starting from top row
         //down for all columns
@@ -79,6 +75,7 @@ fn check_for_winner(
             }
         }
     }
+    
     //across for 2nd and 3rd rows
     if spaces_taken[3] == true && spaces_by_player[3] == current_player {
         if spaces_taken[4] == true && spaces_by_player[4] == current_player {
@@ -102,9 +99,7 @@ fn main() {
     let mut current_player = 'X';
     let mut player_number = 1;
     let mut spaces_list: Vec<i32> = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
-    let mut spaces_taken: Vec<bool> = vec![
-        false, false, false, false, false, false, false, false, false,
-    ];
+    let mut spaces_taken: Vec<bool> = vec![false, false, false, false, false, false, false, false, false,];
     let mut spaces_by_player: Vec<char> = vec![' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '];
     let mut spaces_remaining = 9;
 
@@ -113,20 +108,16 @@ fn main() {
     println!("Player 1 will be X");
     println!("Player 2 will be O\n");
 
-    let mut game_over: bool =
-        check_for_winner(&mut spaces_taken, &mut spaces_by_player, current_player);
+    let mut game_over: bool = check_for_winner(&mut spaces_taken, &mut spaces_by_player, current_player);
+    
     //runs the game checks for 3 in a row or no more spaces to play in
     while game_over != true && spaces_remaining > 0 {
         print_board(&mut spaces_list, &mut spaces_by_player);
+    
+        //takes in a players input for the space they want to place their 'X' or 'O' in
         let mut input = String::new();
-        println!(
-            "\nPlayer {}, Enter the number for the space you want to choose: ",
-            player_number
-        );
-        io::stdin()
-            .read_line(&mut input)
-            .expect("failed to readline")
-            .to_string();
+        println!("\nPlayer {}, Enter the number for the space you want to choose: ", player_number);
+        io::stdin().read_line(&mut input).expect("failed to readline").to_string();
         let index: usize = input.trim().parse().expect("Input not an integer");
 
         //checks for space chosen being available
