@@ -1,3 +1,10 @@
+/*
+Node for Huffman encoding
+
+3/31/23
+
+Nathan Whitney
+ */
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord)]
 pub struct Node<T> where T: Ord
 {
