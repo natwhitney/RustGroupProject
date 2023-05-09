@@ -26,7 +26,7 @@ fn print_board(spaces_list: &mut Vec<i32>, spaces_by_player: &mut Vec<char>) {
             }
             if spaces_by_player[start_index + 2] == 'X' || spaces_by_player[start_index + 2] == 'O'
             {
-                print!("_{}_", spaces_by_player[start_index + 2]);
+                println!("_{}_", spaces_by_player[start_index + 2]);
             } else {
                 println!("_{}_", spaces_list[start_index + 2]);
             }
