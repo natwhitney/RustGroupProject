@@ -27,6 +27,14 @@ impl<T> Node<T> where T: Ord{
         new_node
     }
 
+    pub fn set_left(&mut self, left: Node<T>) {
+        self.left = Some(Box::new(left));
+    }
+
+    pub fn set_right(&mut self, right: Node<T>) {
+        self.right = Some(Box::new(right));
+    }
+
     pub fn is_leaf(&self) -> bool {
         if &self.left == &None && &self.right == &None {
             return true

@@ -15,7 +15,31 @@ fn main() {
         .expect("Couldn't Read File");
 
     build_and_write(&file_contents, &input_arg[2]);
+    let new_string = read_byte_to_string(&"new_file.bin".to_string());
+
+    println!("{}", new_string);
 }
+
+/*
+fn read_message(input_file: &String, output_file: &String) {
+
+}
+
+fn read_tree(input_string: &mut String) -> Node<Option<char>> {
+    let mut node: Node<Option<char>> = binary_tree::Node::new_node(None, None, None);
+
+    for bit in input_string.chars(){
+        if bit == '0' {
+            node.set_left(binary_tree::Node::new_node(None, None, None));
+            node.set_right(binary_tree::Node::new_node(None, None, None));
+        } else if bit == '1' {
+
+        }
+    }
+    node
+}
+*/
+
 
 fn build_and_write(input_string: &String, new_file_name: &String) {
     let char_vals = count_chars(&input_string);
@@ -40,39 +64,90 @@ fn build_and_write(input_string: &String, new_file_name: &String) {
     println!("{}\n", tree_string);
     println!("{}\n", full_tree_string);
 
-    let full_string = binary_string + "0000000000000000" + &full_tree_string;
+    let mut full_string = binary_string + &full_tree_string;
+
+    let padding = full_string.len() % 8;
+
+    //To generate padding so it writes in 8 byte chunks nicely
+    for _ in 0..padding {
+        full_string += "0";
+    }
 
     println!("{}", full_string);
 
-    let mut new_file = fs::File::create(new_file_name)
-        .expect("Couldn't Create File");
+    write_string_as_bytes(&full_string, new_file_name)
+}
 
-    write!(new_file, "{}", full_string)
-        .expect("Couldn't Write to File");
+fn read_byte_to_string(file_name: &String) -> String {
+    let byte_vec = &fs::read(file_name).expect("Couldn't Read File");
 
-    /* 
-    let mut full_bit_vec = bitvec!();
-    for char in full_string.chars() {
+    let mut final_string = String::new();
+
+    println!();
+    for byte in byte_vec {
+        println!("{}", byte);
+        let temp_string = &format!("{:0>8b}", byte);
+        let reversed_byte = temp_string.chars().rev().collect::<String>();
+        final_string += &reversed_byte;
+    }
+
+    final_string
+}
+
+/*
+fn read_byte_to_string(file_name: &String) -> String {
+    let byte_vec = &fs::read(file_name).expect("Couldn't Read File");
+
+    let mut final_string = String::new();
+
+    for byte in byte_vec {
+        let temp_string = &format!("{:0>8b}", byte);
+        final_string += &reverse(temp_string);
+    }
+
+    final_string
+}*/
+
+fn reverse(string: &str) -> String{
+    string.chars().rev().collect()
+}
+
+fn write_string_as_bytes(binary_string: &String, file_name: &String) {
+    if binary_string.len() % 8 != 0 {
+        panic!("Binary String not divisible by bytes");
+    }
+
+    let mut byte_vec: Vec<u8> = vec![];
+
+    let mut bucket = [0; 8];
+    let mut counter = 0;
+
+    for char in binary_string.chars() {
         match char {
-            '0' => full_bit_vec.push(false),
-            '1' => full_bit_vec.push(true),
-            _ => panic!("Unexpected value in binary string!"),
+            '0' => bucket[counter] = 0,
+            '1' => bucket[counter] = 1,
+            _ => panic!("Binary string somehow has something other than 1 or 0")
+        };
+
+        if counter == 7 {
+            let mut num: u8 = 0;
+            for i in 0..bucket.len() {
+                if bucket[i] == 1 {
+                    num += 2_u8.pow(7 - i as u32)
+                }
+            }
+            
+            println!("{}", num);
+            byte_vec.push(num);
+            counter = 0;
+            bucket = [0; 8];
+        } else {
+            counter += 1;  
         }
     }
 
-    println!("{:?}", full_bit_vec);
-    
-    let mut new_file = fs::File::create(new_file_name)
-        .expect("Couldn't Create File");
-
-    let mut pos = 0;
-    
-    while pos < full_bit_vec.len() {
-        let bytes_written = new_file.write(&full_bit_vec[pos]);
-    }
-    */
-
-
+    std::fs::write(file_name, byte_vec)
+        .expect("File Couldn't be created");
 }
 
 fn convert_tree_to_full_binary(binary_string: &String) -> String {
